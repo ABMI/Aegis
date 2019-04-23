@@ -1,0 +1,12 @@
+name: inst
+title: inst
+username:
+account: aegis
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 610258
+bundleId: 2031819
+url: https://aegis.shinyapps.io/inst/
+when: 1556003375.93018
+asMultiple: FALSE
+asStatic: FALSE

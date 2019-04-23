@@ -1,50 +1,153 @@
-##install&require packages
-packages<-function(x){
-  x<-as.character(match.call()[[2]])
-  if (!require(x,character.only=TRUE)){
-    install.packages(pkgs=x,repos="http://cran.r-project.org")
-    require(x,character.only=TRUE)
-  }
-  else
-  {
-    require(x,character.only=TRUE)
-  }
-}
 
+##install&require packages
+# packages<-function(x){
+#   x<-as.character(match.call()[[2]])
+#   if (!require(x,character.only=TRUE)){
+#     install.packages(pkgs=x,repos="http://cran.r-project.org")
+#     require(x,character.only=TRUE)
+#   }
+#   else
+#   {
+#     require(x,character.only=TRUE)
+#   }
+# }
+Sys.setlocale(category="LC_CTYPE", locale="C")
 options(expressions=500000)
 
-packages(DCluster)
-packages(AEGIS)
-packages(raster)
-packages(maps)
-packages(mapdata)
-packages(mapproj)
-packages(leaflet)
-packages(ggmap)
-packages(dplyr)
-packages(sqldf)
-packages(shiny)
-packages(bindrcpp)
-packages(pkgconfig)
-packages(shinyjs)
-packages(SqlRender)
-packages(DatabaseConnector)
-packages(shinydashboard)
-packages(maptools)
-packages(SpatialEpi)
-packages(lubridate)
-packages(rgdal)
-packages(gpclib)
-packages(rgeos)
+library(maps)
+library(mapdata)
+library(mapproj)
+library(leaflet)
+library(dplyr)
+library(sqldf)
+library(shiny)
+library(bindrcpp)
+library(pkgconfig)
+library(shinyjs)
+library(shinydashboard)
+library(maptools)
+library(SpatialEpi)
+library(lubridate)
+library(rgdal)
+library(gpclib)
+library(rgeos)
+library(devtools)
+devtools::install_github("ohdsi/aegis")
+library(AEGIS)
+library(googledrive)
+library(raster)
+library(DatabaseConnector)
+library(SqlRender)
+library(ggmap)
+library(DCluster)
 
-#INLA package is very heavy
-#So, INLA packages must be downloaded separately
-if(isTRUE(which(installed.packages()[,1] %in% "INLA")>1)){
-  library(INLA)
-}
 
 gpclibPermit()
-Sys.setlocale(category = "LC_ALL", locale = "us")
+##########################################################################
+##########################################################################
+##########################################################################
+###################### function page #####################################
+
+# if (!require(googledrive)){
+#   devtools::install_github("tidyverse/googledrive")
+#   require(googledrive)
+# } else {
+#   require(googledrive)
+# }
+#
+# if (!require(devtools)){
+#   install.packages("devtools")
+# }
+#
+# if (!require(raster)){
+#   devtools::install_github("cran/raster", ref="2.6-7")
+#   require(raster)
+# } else {
+#   require(raster)
+# }
+#
+# if (!require(DatabaseConnector)){
+#   devtools::install_github("ohdsi/DatabaseConnector")
+#   require(DatabaseConnector)
+# } else {
+#   require(DatabaseConnector)
+# }
+#
+# if (!require(SqlRender)){
+#   devtools::install_github("ohdsi/SqlRender")
+#   require(SqlRender)
+# } else {
+#   require(SqlRender)
+# }
+#
+# if (!require(AEGIS)){
+#   devtools::install_github("ohdsi/aegis")
+#   require(AEGIS)
+# } else {
+#   require(AEGIS)
+# }
+#
+# if (!require(ggmap)){
+#   devtools::install_github("dkahle/ggmap")
+#   require(ggmap)
+# } else {
+#   require(ggmap)
+# }
+#
+# if (!require(DCluster)){
+#   devtools::install_github("cran/DCluster")
+#   require(DCluster)
+# } else {
+#   require(DCluster)
+# }
+
+
+
+
+ggmap::register_google(key = 'AIzaSyAhtAT7_quTf0F1TTT2_rYnScYjO-hRA9Q', account_type = "standard", client = NA, signature = NA, day_limit = 2500, second_limit = 2500)
+
+# temp <- tempfile(fileext = ".rds")
+# dl <- drive_download(
+#   as_id("1maOgnGqDypjIvH5K6EevY4mcSjhh0RhY"), path = temp, overwrite = TRUE)
+# df <- readRDS(temp)
+# colnames(df) <- tolower(colnames(df))
+#
+#
+#
+# temp <- tempfile(fileext = ".rds")
+# dl <- drive_download(
+#   as_id("1Cu1MhgI0XSBvFtfmUjXcRSTdS4rwLV5p"), path = temp, overwrite = TRUE)
+# Country_list <- readRDS(temp)
+
+# df <- "D:/git/AEGIS_demopage/data/df.rds"
+# Country_list <- "D:/git/AEGIS_demopage/data/Country_list.rds"
+
+df <- readRDS("df.rds")
+Country_list <- readRDS("Country_list.rds")
+
+
+Call.Cohortlist_demo<-function(){
+
+  name <- c("All-person", "Vascular disorder")
+  id <- c(1:2)
+
+  cohortlist <- data.frame(cbind(name, id))
+  cohortlist$cohortname <- paste(cohortlist$id, cohortlist$name, sep="; ")
+
+  return(cohortlist)
+}
+
+###################### function page #####################################
+##########################################################################
+##########################################################################
+##########################################################################
+##########################################################################
+##########################################################################
+##########################################################################
+##########################################################################
+
+
+
 
 shinyApp(
   # Define UI for dataset viewer application
@@ -53,8 +156,7 @@ shinyApp(
     dashboardSidebar(sidebarMenu(menuItem("DB connection",tabName= "db" ),
                                  menuItem("Cohorts", tabName = "Cohorts" ),
                                  menuItem("Disease mapping", tabName = "Disease_mapping" ),
-                                 menuItem("Clustering",tabName = "Clustering" ),
-                                 menuItem("Interactive disease map(beta)", tabName = "Leaflet(beta)" )
+                                 menuItem("Clustering",tabName = "Clustering" )
     )
     ),
     dashboardBody(tabItems(
@@ -62,12 +164,12 @@ shinyApp(
               fluidRow(
                 titlePanel("Database Connection"),
                 sidebarPanel(
-                  textInput("ip","IP","")
+                  textInput("ip","IP","0.0.0.0")
                   ,uiOutput("sqltype")
-                  ,textInput("CDMschema","CDM Database schema","")
-                  ,textInput("Resultschema","CDM Result schema","")
-                  ,textInput("usr","USER","")
-                  ,passwordInput("pw","PASSWORD","")
+                  ,textInput("CDMschema","CDM Database schema","CDM_DB")
+                  ,textInput("Resultschema","CDM Result schema","CDM_result_DB")
+                  ,textInput("usr","USER","GUEST")
+                  ,passwordInput("pw","PASSWORD","GUEST")
                   #input text to db information
                   ,actionButton("db_load","Load DB")
                   #,hr()
@@ -77,7 +179,8 @@ shinyApp(
                 ),
                 mainPanel(
                   verbatimTextOutput("txt"),
-                  tableOutput("view")
+                  tableOutput("view"),
+                  h6("This version is only for demo, so it may not support all functions")
                 )
               )
       ),
@@ -91,17 +194,18 @@ shinyApp(
                   ,dateRangeInput(inputId = "dateRange", label = "Select Windows",  start = "2002-01-01", end = "2013-12-31")
                   ,hr()
                   ,radioButtons("GIS.Age","Age and gender adjust",choices = c("No" = "no", "Yes"="yes"))
-                  ,numericInput("GIS.timeatrisk_startdt","Define the time-at-risk window start, relative to target cohort entry:", 0, min=0)
-                  ,numericInput("GIS.timeatrisk_enddt","Define the time-at-risk window end:", 0, min=0)
-                  ,selectInput("GIS.timeatrisk_enddt_panel","", choices =
-                                c("from cohort start date" = "cohort_start_date","from cohort end date" = "cohort_start_date"),selected = "cohort_end_date")
-                  ,textInput("fraction","fraction",100000)
+                  #,numericInput("GIS.timeatrisk_startdt","Define the time-at-risk window start, relative to target cohort entry:", 0, min=0)
+                  #,numericInput("GIS.timeatrisk_enddt","Define the time-at-risk window end:", 0, min=0)
+                  #,selectInput("GIS.timeatrisk_enddt_panel","", choices =
+                  #              c("from cohort start date" = "cohort_start_date","from cohort end date" = "cohort_start_date"),selected = "cohort_end_date")
+                  #,textInput("fraction","fraction", 100000)
                   ,uiOutput("country_list")
                   ,actionButton("submit_table","submit")
                   ,width=2
                 ),
                 mainPanel
-                (dataTableOutput('GIS.table'))
+                (dataTableOutput('GIS.table'),
+                  h6("This version is only for demo, so it may not support all functions"))
               )
       ),
       tabItem(tabName = "Disease_mapping",
@@ -110,7 +214,7 @@ shinyApp(
                 sidebarPanel(
                   radioButtons("GIS.level","Administrative level",choices = c("Level 2" = 1, "Level 3" = 2),selected = 2)
                   #radioButtons("GIS.level","Administrative level",choices = c("Level 1" = 0, "Level 2" = 1, "Level 3" = 2),selected = 1)
-                  ,radioButtons("GIS.distribution","Select distribution options", choices = c("Count of the target cohort (n)" = "count","Propotion" = "proportion", "Standardized Incidence Ratio"="SIR", "Bayesian mapping"="BYM"),selected = "count")
+                  ,radioButtons("GIS.distribution","Select distribution options", choices = c("Count of the target cohort (n)" = "count","Propotion" = "proportion", "Standardized Incidence Ratio"="SIR"),selected = "count")
                   #,radioButtons("distinct","Select distinct options", c("Yes" = "distinct","No" = "" ),inline= TRUE)
                   ,textInput("plot.title","title"," ")
                   ,textInput("plot.legend","legend"," ")
@@ -120,8 +224,8 @@ shinyApp(
                 mainPanel(
                   #verbatimTextOutput("test")
                   #,
-                  plotOutput("GIS.plot")
-                  #,textOutput("text")
+                  plotOutput("GIS.plot"),
+                  h6("This version is only for demo, so it may not support all functions")
                 )
               )
       ),
@@ -140,15 +244,16 @@ shinyApp(
               fluidRow(
                 titlePanel("Disease clustering"),
                 sidebarPanel(
-                  radioButtons("Cluster.method","Cluster Method",choices = c("Local Moran's I" = "moran", "Kulldorff's method" = "kulldorff"))
-                  ,textInput("Cluster.parameter","Kulldorff's method parameter", "0.1")
+                  radioButtons("Cluster.method","Cluster Method",choices = c("Kulldorff's method" = "kulldorff"))
+                  ,textInput("Cluster.parameter","Kulldorff's method parameter", "0.05")
                   ,actionButton("submit_cluster","submit") #Draw plot button
                   ,width=2
                 ),
                 mainPanel(
                   dataTableOutput('Cluster.table')
                   ,plotOutput("Cluster.plot")
-                  ,textOutput("Cluster.test")
+                  ,textOutput("Cluster.test"),
+                  h6("This version is only for demo, so it may not support all functions")
                 )
               )
       )
@@ -175,61 +280,63 @@ shinyApp(
 
 
     output$cohort_tcdi <- renderUI({
-      cohort_list <- cohort_listup()
+      cohort_list <- Call.Cohortlist_demo()
       if (length(cohort_list)>1) {
-        selectInput("tcdi", "Select target cohort", choices = cohort_list[,3])
+        selectInput("tcdi", "Select target cohort", choices = cohort_list[1,3])
       } else {
-        selectInput("tcdi", "Select target cohort", choices = cohort_list[,1])
+        selectInput("tcdi", "Select target cohort", choices = cohort_list[1,1])
       }
     })
 
 
     output$cohort_ocdi <- renderUI({
-      cohort_list <- cohort_listup()
+      cohort_list <-Call.Cohortlist_demo()
       #selectInput("ocdi", "Select outcome cohort", choices = cohort_list[,3])
       if (length(cohort_list)>1) {
-          selectInput("ocdi", "Select target cohort", choices = cohort_list[,3])
+          selectInput("ocdi", "Select target cohort", choices = cohort_list[2,3])
         } else {
-          selectInput("ocdi", "Select target cohort", choices = cohort_list[,1])
+          selectInput("ocdi", "Select target cohort", choices = cohort_list[2,1])
         }
     })
 
 
     output$country_list <- renderUI({
-      country_list <- GIS.countrylist()
+      country_list <- Country_list
       selectInput("country", "Select country", choices = country_list[,1])
     })
 
     cohort_listup <- eventReactive(input$db_load, {
-      connectionDetails <<- DatabaseConnector::createConnectionDetails(dbms=input$sqltype,
-                                                                       server=input$ip,
-                                                                       schema=input$Resultschema,
-                                                                       user=input$usr,
-                                                                       password=input$pw)
-      connection <<- DatabaseConnector::connect(connectionDetails)
-      cohort_list <<- Call.Cohortlist(connectionDetails, connection, input$Resultschema)
+      cohort_list <- cohort
     })
 
 
     render.table <- eventReactive(input$submit_table,{
       isolate({
-        country_list <<- GIS.countrylist()
-        country <<- input$country
-        MAX.level <<- country_list[country_list$NAME==country,3]
-        GADM <<- GIS.download(country, MAX.level)
+        country_list <<- Country_list
+        country <<- "United States"
+        MAX.level <<- 2
+        GADM <<- readRDS("GADM_2.8_United States_adm_total.rds")
         GADM.table <<- GADM[[3]]@data
 
         #Conditional input cohort number
-        if (length(cohort_list)>1) {
-          tcdi <- cohort_list[which(cohort_list[,3] %in% input$tcdi == TRUE),1]
-          ocdi <- cohort_list[which(cohort_list[,3] %in% input$ocdi == TRUE),1]
-        } else {
-          tcdi <- input$tcdi
-          ocdi <- input$ocdi
-        }
+        # if (length(cohort_list)>1) {
+        #   tcdi <- cohort_list[which(cohort_list[,3] %in% input$tcdi == TRUE),1]
+        #   ocdi <- cohort_list[which(cohort_list[,3] %in% input$ocdi == TRUE),1]
+        # } else {
+        #   tcdi <- input$tcdi
+        #   ocdi <- input$ocdi
+        # }
+        tcdi <- 1
+        ocdi <- 2
 
-        CDM.table <<- AEGIS::GIS.extraction(connectionDetails, input$CDMschema, input$Resultschema, targettab="cohort", input$dateRange[1], input$dateRange[2], input$distinct,
-                                            tcdi, ocdi, input$fraction, input$GIS.timeatrisk_startdt, input$GIS.timeatrisk_enddt, input$GIS.timeatrisk_enddt_panel)
+
+        colnames(df) <- tolower(colnames(df))
+        df[, c("outcome_count", "target_count")][is.na(df[, c("outcome_count", "target_count")])] <- 0
+
+
+        CDM.table <<- GIS.Indirect.AgeGenderadjust(df, 100000)
+
+
         table <- dplyr::left_join(CDM.table, GADM.table, by=c("gadm_id" = "ID_2"))
         switch(input$GIS.Age,
                "no"={
@@ -256,12 +363,10 @@ shinyApp(
 
 
     draw.plot <- eventReactive(input$submit_plot,{
-      isolate({
-        GADM.table <<- GADM[[3]]@data
-        countdf_level <<- GIS.calc1(input$GIS.level, input$GIS.distribution, input$GIS.Age)
-        mapdf <<- GIS.calc2(input$GIS.level, input$fraction)
-        plot <- GIS.plot(input$GIS.distribution, input$plot.legend, input$plot.title, input$GIS.Age)
-      })
+
+        countdf_level <<- GIS.calc0(input$GIS.level, input$GIS.distribution, input$GIS.Age)
+        mapdf <<- GIS.calc3(input$GIS.level, input$fraction)
+        plot <- GIS.plot2(mapdf,input$GIS.distribution, input$plot.legend, input$plot.title, input$GIS.Age)
       plot
     })
 
@@ -300,7 +405,7 @@ shinyApp(
 
     plotting.cluster <- eventReactive(input$submit_cluster,{
       isolate({
-        plot <- Cluster.plot(input$Cluster.method, input$Cluster.parameter, input$GIS.Age, input$country)
+        plot <- Cluster.plot2(input$Cluster.method, input$Cluster.parameter, input$GIS.Age, input$country)
       })
       plot
     })
@@ -315,4 +420,3 @@ shinyApp(
     ## End of server
   }, options = list(height = 1000)
 )
-
