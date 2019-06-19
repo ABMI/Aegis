@@ -10,7 +10,7 @@
          DROP TABLE #outcome_cohort
       IF OBJECT_ID('tempdb..#person_temp') IS NOT NULL
          DROP TABLE #person_temp
-      IF OBJECT_ID('tempdb..#person_temp2') IS NOT NULL
+       IF OBJECT_ID('tempdb..#person_temp2') IS NOT NULL
          DROP TABLE #person_temp2
 
 
@@ -148,3 +148,5 @@
        ON a.gadm_id = b.gadm_id and a.age_cat = b.age_cat and a.sex_cat = b.sex_cat
        GROUP BY a.gadm_id, a.age_cat, a.sex_cat, a.target_count, b.outcome_count
        ORDER BY a.gadm_id, a.age_cat
+
+

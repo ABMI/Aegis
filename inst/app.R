@@ -1,3 +1,4 @@
+
 ##install&require packages
 packages<-function(x){
   x<-as.character(match.call()[[2]])
@@ -62,15 +63,15 @@ shinyApp(
               fluidRow(
                 titlePanel("Database Connection"),
                 sidebarPanel(
-                  textInput("ip","IP","")
+                  textInput("ip","IP","128.1.99.53")
                   ,uiOutput("sqltype")
-                  ,textInput("CDMschema","CDM Database schema","")
-                  ,textInput("Resultschema","CDM Result schema","")
-                  ,textInput("usr","USER","")
-                  ,passwordInput("pw","PASSWORD","")
-                  ,textInput('WebapiDBserver','WebAPI DB Server IP','')
-                  ,textInput('WebapiDBname','WebAPI DB Name','')
-                  ,textInput('WebapiDBschema','WebAPI DB Schema','')
+                  ,textInput("CDMschema","CDM Database schema","NHIS_NSC.dbo")
+                  ,textInput("Resultschema","CDM Result schema","WEBAPI_2_6_NHIS_NSC.results_v27")
+                  ,textInput("usr","USER","dspark")
+                  ,passwordInput("pw","PASSWORD","qwer1234!@")
+                  ,textInput('WebapiDBserver','WebAPI DB Server IP','128.1.99.58')
+                  ,textInput('WebapiDBname','WebAPI DB Name','WEBAPI_DB')
+                  ,textInput('WebapiDBschema','WebAPI DB Schema','webapi_v27')
                   #input text to db information
                   ,actionButton("db_load","Load DB")
 
@@ -93,7 +94,7 @@ shinyApp(
                   ,hr()
                   ,radioButtons("GIS.Age","Age and gender adjust",choices = c("No" = "no", "Yes"="yes"))
                   ,numericInput("GIS.timeatrisk_startdt","Define the time-at-risk window start, relative to target cohort entry:", 0, min=0)
-                  ,numericInput("GIS.timeatrisk_enddt","Define the time-at-risk window end:", 0, min=0)
+                  ,numericInput("GIS.timeatrisk_enddt","Define the time-at-risk window end:", 99999, min=0)
                   ,selectInput("GIS.timeatrisk_enddt_panel","GIS.timeatrisk_enddt_panel", choices =
                                  c("from cohort start date" = "cohort_start_date","from cohort end date" = "cohort_end_date"),selected = "cohort_end_date")
                   ,textInput("fraction","fraction",100000)
@@ -113,25 +114,14 @@ shinyApp(
                   #radioButtons("GIS.level","Administrative level",choices = c("Level 1" = 0, "Level 2" = 1, "Level 3" = 2),selected = 1)
                   ,radioButtons("GIS.distribution","Select distribution options", choices = c("Count of the target cohort (n)" = "count","Propotion" = "proportion", "Standardized Incidence Ratio"="SIR", "Bayesian mapping"="BYM"),selected = "count")
                   #,radioButtons("distinct","Select distinct options", c("Yes" = "distinct","No" = "" ),inline= TRUE)
+                  ,radioButtons("mycolor","Select Color",choices = c("Reds" = "Reds", "Greens" = "Greens","Blues" = "Blues"))
                   ,textInput("plot.title","title"," ")
                   ,textInput("plot.legend","legend"," ")
                   ,actionButton("submit_plot","submit") #Draw plot button
                   ,width=2
                 ),
                 mainPanel(
-                  #verbatimTextOutput("test")
-                  #,
                   leafletOutput("GIS.plot")
-                  #,textOutput("text")
-                )
-              )
-      ),
-
-      tabItem(tabName = "Leaflet(beta)",
-              fluidRow(
-                titlePanel("Interactive disease map(beta)"),
-                mainPanel(
-                  leafletOutput("mappingLeaflet")
                 )
               )
       ),
@@ -147,9 +137,7 @@ shinyApp(
                   ,width=2
                 ),
                 mainPanel(
-                  dataTableOutput('Cluster.table')
-                  ,plotOutput("Cluster.plot")
-                  ,textOutput("Cluster.test")
+                  leafletOutput("GIS.plot2")
                 )
               )
       )
@@ -208,12 +196,13 @@ shinyApp(
         GADM <<- GIS.download(input$country, MAX.level)
         GADM.table <<- GADM[[3]]@data
 
-        tcdi <- substr(input$tcdi,1,gregexpr(' ',input$tcdi)[[1]][1]-1)
-        ocdi <- substr(input$ocdi,1,gregexpr(' ',input$ocdi)[[1]][1]-1)
+        tcdi <<- substr(input$tcdi,1,gregexpr(' ',input$tcdi)[[1]][1]-1)
+        ocdi <<- substr(input$ocdi,1,gregexpr(' ',input$ocdi)[[1]][1]-1)
 
         #Conditional input cohort number
-        CDM.table <<- GIS.extraction(input$CDMschema, input$Resultschema, targettab="cohort", input$dateRange[1], input$dateRange[2],
+        CDM.table <<- GIS.extraction(connectionDetails,input$CDMschema, input$Resultschema, targettab="cohort", input$dateRange[1], input$dateRange[2],
                                      tcdi, ocdi, input$fraction, input$GIS.timeatrisk_startdt, input$GIS.timeatrisk_enddt, input$GIS.timeatrisk_enddt_panel)
+
         table <- dplyr::left_join(CDM.table, GADM.table, by=c("gadm_id" = "ID_2"))
         switch(input$GIS.Age,
                "no"={
@@ -244,17 +233,32 @@ shinyApp(
     draw.plot <- eventReactive(input$submit_plot,{
         countdf_level <<- GIS.calc1(GADM.table,CDM.table,input$GIS.level, input$GIS.distribution, input$GIS.Age)
         mapdf <<- GIS.calc2(countdf_level,GADM,input$GIS.level, input$fraction)
-        plot <- leafletMapping(as.numeric(input$GIS.level))
+        plot <- leafletMapping(as.numeric(input$GIS.level),GADM,input$mycolor)
 
     })
 
 
-    output$GIS.plot <- renderLeaflet ({
+    output$GIS.plot <- renderLeaflet({
       draw.plot()
     })
 
 
     ##disease##################################################
+
+    ##Clustering###############################################
+
+    draw.plot2 <- eventReactive(input$submit_cluster,{
+
+      plot <- Cluster.plot(input$Cluster.method, input$Cluster.parameter,input$GIS.Age, input$country,GADM,as.numeric(input$GIS.level))
+    })
+
+
+    output$GIS.plot2 <- renderLeaflet({
+      draw.plot2()
+    })
+
+
+    ##Clustering###############################################
 
     ## End of server
   }, options = list(height = 1000)

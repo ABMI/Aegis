@@ -14,7 +14,7 @@ Call.Cohortlist<-function(WebapiDBserver,WebapiDBname,WebapiDBschema,Resultschem
   ##Check Cohort Definition
   sql <- 'SELECT name,id FROM @WebapiDBserver@WebapiDBname.@WebapiDBschema.cohort_definition'
   sql <- SqlRender::renderSql(sql,
-                              WebapiDBserver=if(WebapiDBserver==''){WebapiDBserver=''}else(WebapiDBserver= paste0('[',WebapiDBserver,']',',')),
+                              WebapiDBserver=if(WebapiDBserver==''){WebapiDBserver=''}else(WebapiDBserver= paste0('[',WebapiDBserver,']','.')),
                               WebapiDBname=WebapiDBname,
                               WebapiDBschema=WebapiDBschema)$sql
   sql <- SqlRender::translateSql(sql,

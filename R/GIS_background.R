@@ -1,4 +1,4 @@
-leafletMapping <-  function(GIS.level){
+leafletMapping <-  function(GIS.level,GADM,mycolor){
 
   if(!exists("GADM[[1]]")){
     m <- leaflet() %>%
@@ -29,10 +29,10 @@ leafletMapping <-  function(GIS.level){
 
   #Color to fill the polygons
   pal <- colorQuantile("Greens", domain=tempGADM@data$mappingEstimate,
-                       n=10, probs = seq(0, 1, length.out = 11), na.color = "#2a1866",
+                       n=10, probs = seq(0, 1, length.out = 11), na.color = "#FFFFFF",
                        alpha = FALSE, reverse = FALSE)
 
-
+  ?colorQuantile
   #pal <- colorBin("YlOrRd", domain = tempGADM@data$mappingEstimate, quantile(tempGADM@data$mappingEstimate, probs = c(0, 0.1, 0.25, 0.5, 0.75, 0.9, 1)))
 
   #Estimates into pop up objects
@@ -46,9 +46,9 @@ leafletMapping <-  function(GIS.level){
 
   m <- m %>% addPolygons(data = tempGADM,
                          fillColor= ~pal(tempGADM@data$mappingEstimate),
-                         fillOpacity = 0.4,
-                         weight = 2,
-                         color = "white",
+                         fillOpacity = 0,
+                         weight = 1,
+                         color = "black",
                          dashArray = "3",
                          popup = polygon_popup,
                          highlight = highlightOptions(
@@ -63,9 +63,3 @@ leafletMapping <-  function(GIS.level){
   return(m)
 
 }
-
-
-# select 된 나라의 값을 가져온다.
-# select country 하면 Disease Mapping에 바로 나라 뜨기. => 처음에 나와야하는게 느릴경우 원하는 값을 볼때 더 느릴 수 있음
-# 팔레트 고를수 있고, 색 바뀌게 하기.
-# progressbar 도입.
