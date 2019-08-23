@@ -1,88 +1,5 @@
 Cluster.plot <- function(method, parameter, GIS.Age, country,GADM,GIS.level){
-  switch(method,
-         "moran" = {
-           #get out island district
-           moran_poly <- GADM[[3]][-c(125, 134, 145, 153, 158, 161, 162, 189, 190, 193, 195),]
 
-
-           switch(GIS.Age,
-                  "no"={
-                    df_moran <- CDM.table[, c("crd_sir", "gadm_id", "outcome_count", "crd_expected")]
-                    colnames(df_moran) <- c("SIR", "gadm_id", "outcome_count", "expected")
-
-                  },
-                  "yes"={
-                    df_moran <- CDM.table[, c("std_sir", "gadm_id", "outcome_count", "std_expected")]
-                    colnames(df_moran) <- c("SIR", "gadm_id", "outcome_count", "expected")
-
-                  }
-
-           )
-
-           moran_poly@data <- moran_poly@data %>%
-             left_join(dplyr::select(df_moran, SIR, gadm_id, outcome_count, expected), by=c("ID_2"="gadm_id"))
-
-           spatmatrix <- poly2nb(moran_poly)
-
-           # create a neighbours list with spatial weights
-           listw <- nb2listw(spatmatrix)
-
-           # calculate the local moran of the distribution of target population
-           lmoran <- localmoran(moran_poly$SIR, listw)
-           summary(lmoran)
-
-           # padronize the variable and save it to a new column
-           moran_poly$SIR_s <- scale(moran_poly$SIR)  %>% as.vector()
-
-           # create a spatially lagged variable and save it to a new column
-           moran_poly$lag_s_SIR <- lag.listw(listw, moran_poly$SIR_s)
-
-           # summary of variables, to inform the analysis
-           summary(moran_poly$SIR_s)
-           summary(moran_poly$lag_s_SIR)
-
-           # moran sccaterplot, in basic graphics (with identification of influential observations)
-           x <- moran_poly$SIR_s
-           y <- moran_poly$lag_s_SIR %>% as.vector()
-           xx <- data_frame(x, y)
-
-           moran_poly$quad_sig <- NA
-
-           # high-high quadrant
-           moran_poly[(moran_poly$SIR_s >= 0 &
-                         moran_poly$lag_s_SIR >= 0) &
-                        (lmoran[, 5] <= 0.05), "quad_sig"] <- "high-high"
-           # low-low quadrant
-           moran_poly[(moran_poly$SIR_s <= 0 &
-                         moran_poly$lag_s_SIR <= 0) &
-                        (lmoran[, 5] <= 0.05), "quad_sig"] <- "low-low"
-           # high-low quadrant
-           moran_poly[(moran_poly$SIR_s >= 0 &
-                         moran_poly$lag_s_SIR <= 0) &
-                        (lmoran[, 5] <= 0.05), "quad_sig"] <- "high-low"
-           # low-high quadrant
-           moran_poly@data[(moran_poly$SIR_s <= 0
-                            & moran_poly$lag_s_SIR >= 0) &
-                             (lmoran[, 5] <= 0.05), "quad_sig"] <- "low-high"
-           # non-significant observations
-           moran_poly@data[(lmoran[, 5] > 0.05), "quad_sig"] <- "not signif."
-
-           moran_poly$quad_sig <- as.factor(moran_poly$quad_sig)
-           moran_poly@data$id <- rownames(moran_poly@data)
-
-           df <- fortify(moran_poly, region="id")
-           df <- left_join(df, moran_poly@data)
-
-           map <- GIS.background(GADM[[3]]@bbox, country)
-
-           plot <- map +
-             geom_polygon(data=df,aes(x=long,y=lat,group=group,fill=quad_sig),colour="black", size=.05)+
-             coord_equal() +
-             theme_void() + scale_fill_brewer( palette = "Set1") +
-             coord_fixed(ratio=1.1)
-
-         },
-         "kulldorff" = {
            parameter <- as.numeric(parameter)
 
            gadm_id <- CDM.table[,"gadm_id"]
@@ -207,7 +124,5 @@ Cluster.plot <- function(method, parameter, GIS.Age, country,GADM,GIS.level){
              addLegend(pal = pal, values = ~tempGADM@data$k.cluster, opacity = 0.7, title = NULL,
                        position = "bottomright")
 
-         }
-  )
   return(plot)
 }

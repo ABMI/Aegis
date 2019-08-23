@@ -1,26 +1,10 @@
-      IF OBJECT_ID('tempdb..#including_cohort') IS NOT NULL
-         DROP TABLE #including_cohort
-      IF OBJECT_ID('tempdb..#including_cohort2') IS NOT NULL
-         DROP TABLE #including_cohort2
-      IF OBJECT_ID('tempdb..#including_cohort3') IS NOT NULL
-         DROP TABLE #including_cohort3
-      IF OBJECT_ID('tempdb..#target_cohort') IS NOT NULL
-         DROP TABLE #target_cohort
-      IF OBJECT_ID('tempdb..#outcome_cohort') IS NOT NULL
-         DROP TABLE #outcome_cohort
-      IF OBJECT_ID('tempdb..#person_temp') IS NOT NULL
-         DROP TABLE #person_temp
-       IF OBJECT_ID('tempdb..#person_temp2') IS NOT NULL
-         DROP TABLE #person_temp2
-
-
-      --target cohort
+--target cohort
       SELECT t.cohort_definition_id, t.subject_id, t.cohort_start_date, t.cohort_end_date
        INTO #target_cohort
        FROM
          (
            SELECT
-           distinct subject_id,
+           @distinct subject_id,
            cohort_definition_id,
            cohort_start_date,
            cohort_end_date
@@ -40,7 +24,7 @@
        FROM
          (
            SELECT
-           distinct subject_id,
+           @distinct subject_id,
            cohort_definition_id,
            cohort_start_date,
            cohort_end_date
@@ -82,12 +66,12 @@
                             when b.gender_concept_id = '8532' then 1
                      end as sex_cat
        into #including_cohort2
-       from #including_cohort a join @cdmDatabaseSchema.person b
+       from #including_cohort a join @resultDatabaseSchema.person b
        on a.subject_id=b.person_id
 
      select distinct a.subject_id, b.fact_id_2, a.age_cat, a.sex_cat
        into #including_cohort3
-       from #including_cohort2 a join @cdmDatabaseSchema.fact_relationship b on a.location_id=b.fact_id_1
+       from #including_cohort2 a join @resultDatabaseSchema.fact_relationship b on a.location_id=b.fact_id_1
        where b.domain_concept_id_1 = 4083586
        order by b.fact_id_2, a.age_cat, a.sex_cat
        ---- end of setting for including cohort
@@ -101,8 +85,8 @@
        ---- person cohort
        SELECT a.*
        into #person_temp
-       FROM @resultDatabaseSchema.@targettab a
-       WHERE COHORT_DEFINITION_ID = 1
+       FROM @resultDatabaseSchema.cohort a
+       WHERE COHORT_DEFINITION_ID = @tcdi
 
 
        SELECT a.*, b.location_id,
@@ -122,7 +106,7 @@
               when b.gender_concept_id = '8532' then 1
           end as sex_cat
        into #person_temp2
-       from #person_temp a left join @cdmDatabaseSchema.person b
+       from #person_temp a left join @resultDatabaseSchema.person b
        on a.subject_id=b.person_id
        ---- end of setting for person_cohort
 
@@ -149,4 +133,8 @@
        GROUP BY a.gadm_id, a.age_cat, a.sex_cat, a.target_count, b.outcome_count
        ORDER BY a.gadm_id, a.age_cat
 
-
+       DROP TABLE #including_cohort
+       DROP TABLE #target_cohort
+       DROP TABLE #outcome_cohort
+       DROP TABLE #person_temp
+       DROP TABLE #person_temp2

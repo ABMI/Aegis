@@ -54,8 +54,7 @@ shinyApp(
     dashboardSidebar(sidebarMenu(menuItem("DB connection",tabName= "db" ),
                                  menuItem("Cohorts", tabName = "Cohorts" ),
                                  menuItem("Disease mapping", tabName = "Disease_mapping" ),
-                                 menuItem("Clustering",tabName = "Clustering" ),
-                                 menuItem("Interactive disease map(beta)", tabName = "Leaflet(beta)" )
+                                 menuItem("Clustering",tabName = "Clustering" )
     )
     ),
     dashboardBody(tabItems(
@@ -63,15 +62,14 @@ shinyApp(
               fluidRow(
                 titlePanel("Database Connection"),
                 sidebarPanel(
-                  textInput("ip","IP","128.1.99.53")
+                  textInput("ip","IP","",placeholder = 'xxx.xxx.xxx.xxx')
                   ,uiOutput("sqltype")
-                  ,textInput("CDMschema","CDM Database schema","NHIS_NSC.dbo")
-                  ,textInput("Resultschema","CDM Result schema","WEBAPI_2_6_NHIS_NSC.results_v27")
-                  ,textInput("usr","USER","dspark")
-                  ,passwordInput("pw","PASSWORD","qwer1234!@")
-                  ,textInput('WebapiDBserver','WebAPI DB Server IP','128.1.99.58')
-                  ,textInput('WebapiDBname','WebAPI DB Name','WEBAPI_DB')
-                  ,textInput('WebapiDBschema','WebAPI DB Schema','webapi_v27')
+                  ,textInput("CDMschema","CDM Database schema","",placeholder = 'yourCdmDb.schema')
+                  ,textInput("Resultschema","CDM Result schema","",placeholder = 'yourCdmResultDb.schema')
+                  ,textInput("usr","USER","",)
+                  ,passwordInput("pw","PASSWORD","")
+                  ,textInput('WebapiDBserver','WebAPI DB Server IP','',placeholder = 'xxx.xxx.xxx.xxx')
+                  ,textInput('WebapiDBschema','WebAPI DB Schema','',placeholder = 'yourWebAPIDb.schema')
                   #input text to db information
                   ,actionButton("db_load","Load DB")
 
@@ -110,7 +108,9 @@ shinyApp(
               fluidRow(
                 titlePanel("Disease mapping setting"),
                 sidebarPanel(
-                  radioButtons("GIS.level","Administrative level",choices = c("Level 2" = 1, "Level 3" = 2),selected = 2)
+                  uiOutput("GIS.level")
+
+                  # radioButtons("GIS.level","Administrative level",choices = c("Level 2" = 1, "Level 3" = 2),selected = 2)
                   #radioButtons("GIS.level","Administrative level",choices = c("Level 1" = 0, "Level 2" = 1, "Level 3" = 2),selected = 1)
                   ,radioButtons("GIS.distribution","Select distribution options", choices = c("Count of the target cohort (n)" = "count","Propotion" = "proportion", "Standardized Incidence Ratio"="SIR", "Bayesian mapping"="BYM"),selected = "count")
                   #,radioButtons("distinct","Select distinct options", c("Yes" = "distinct","No" = "" ),inline= TRUE)
@@ -121,7 +121,7 @@ shinyApp(
                   ,width=2
                 ),
                 mainPanel(
-                  leafletOutput("GIS.plot")
+                  leafletOutput("GIS.plot",height = '200%')
                 )
               )
       ),
@@ -131,7 +131,7 @@ shinyApp(
               fluidRow(
                 titlePanel("Disease clustering"),
                 sidebarPanel(
-                  radioButtons("Cluster.method","Cluster Method",choices = c("Local Moran's I" = "moran", "Kulldorff's method" = "kulldorff"))
+                  radioButtons("Cluster.method","Cluster Method",choices = c("Kulldorff's method" = "kulldorff"))
                   ,textInput("Cluster.parameter","Kulldorff's method parameter", "0.1")
                   ,actionButton("submit_cluster","submit") #Draw plot button
                   ,width=2
@@ -157,7 +157,7 @@ shinyApp(
                                                                        user=input$usr,
                                                                        password=input$pw)
       connection <<- DatabaseConnector::connect(connectionDetails)
-      cohort_list <<- Call.Cohortlist(input$WebapiDBserver,input$WebapiDBname,input$WebapiDBschema,input$Resultschema)
+      cohort_list <<- Call.Cohortlist(input$WebapiDBserver,input$WebapiDBschema,input$Resultschema)
       })
 
     output$sqltype <- renderUI({
@@ -187,6 +187,23 @@ shinyApp(
       country_list <- GIS.countrylist()
       selectInput("country", "Select country", choices = country_list[,1])
     })
+
+
+    ##define Administrative level##############################
+    output$GIS.level<-renderUI({
+
+      maxLevel <- country_list[country_list$NAME == input$country,]$MAX_LEVEL
+
+      radioButtons("GIS.level", "Administrative level",
+                   choices = c(rep(2:maxLevel)),
+                   selected = 2
+      )
+
+      })
+
+
+    ###########################################################
+
 
     ##cohort###################################################
     render.table <- eventReactive(input$submit_table,{
@@ -233,8 +250,8 @@ shinyApp(
     draw.plot <- eventReactive(input$submit_plot,{
         countdf_level <<- GIS.calc1(GADM.table,CDM.table,input$GIS.level, input$GIS.distribution, input$GIS.Age)
         mapdf <<- GIS.calc2(countdf_level,GADM,input$GIS.level, input$fraction)
-        plot <- leafletMapping(as.numeric(input$GIS.level),GADM,input$mycolor)
 
+        plot <- leafletMapping(as.numeric(input$GIS.level),GADM,input$mycolor)
     })
 
 
