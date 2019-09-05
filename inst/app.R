@@ -62,14 +62,14 @@ shinyApp(
               fluidRow(
                 titlePanel("Database Connection"),
                 sidebarPanel(
-                  textInput("ip","IP","",placeholder = 'xxx.xxx.xxx.xxx')
+                  textInput("ip","IP","128.1.99.53",placeholder = 'xxx.xxx.xxx.xxx')
                   ,uiOutput("sqltype")
-                  ,textInput("CDMschema","CDM Database schema","",placeholder = 'yourCdmDb.schema')
-                  ,textInput("Resultschema","CDM Result schema","",placeholder = 'yourCdmResultDb.schema')
-                  ,textInput("usr","USER","",)
-                  ,passwordInput("pw","PASSWORD","")
-                  ,textInput('WebapiDBserver','WebAPI DB Server IP','',placeholder = 'xxx.xxx.xxx.xxx')
-                  ,textInput('WebapiDBschema','WebAPI DB Schema','',placeholder = 'yourWebAPIDb.schema')
+                  ,textInput("CDMschema","CDM Database schema","NHIS_NSC.dbo",placeholder = 'yourCdmDb.schema')
+                  ,textInput("Resultschema","CDM Result schema","WEBAPI_2_6_NHIS_NSC.results_v27",placeholder = 'yourCdmResultDb.schema')
+                  ,textInput("usr","USER","dspark",)
+                  ,passwordInput("pw","PASSWORD","qwer1234!@")
+                  ,textInput('WebapiDBserver','WebAPI DB Server IP','128.1.99.58',placeholder = 'xxx.xxx.xxx.xxx')
+                  ,textInput('WebapiDBschema','WebAPI DB Schema','WEBAPI_DB.webapi_v27',placeholder = 'yourWebAPIDb.schema')
                   #input text to db information
                   ,actionButton("db_load","Load DB")
 
@@ -184,7 +184,7 @@ shinyApp(
     })
 
     output$country_list <- renderUI({
-      country_list <- GIS.countrylist()
+      country_list <<- GIS.countrylist()
       selectInput("country", "Select country", choices = country_list[,1])
     })
 
@@ -195,8 +195,8 @@ shinyApp(
       maxLevel <- country_list[country_list$NAME == input$country,]$MAX_LEVEL
 
       radioButtons("GIS.level", "Administrative level",
-                   choices = c(rep(2:maxLevel)),
-                   selected = 2
+                   choices = c(rep(0:maxLevel)),
+                   selected = 0
       )
 
       })
@@ -251,7 +251,9 @@ shinyApp(
         countdf_level <<- GIS.calc1(GADM.table,CDM.table,input$GIS.level, input$GIS.distribution, input$GIS.Age)
         mapdf <<- GIS.calc2(countdf_level,GADM,input$GIS.level, input$fraction)
 
-        plot <- leafletMapping(as.numeric(input$GIS.level),GADM,input$mycolor)
+        reafletPlot <<- leafletMapping(as.numeric(input$GIS.level),GADM,input$mycolor)
+        reafletPlot
+
     })
 
 

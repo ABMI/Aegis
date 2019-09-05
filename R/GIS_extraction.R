@@ -14,8 +14,8 @@ GIS.extraction<-function(connectionDetails, cdmDatabaseSchema, resultDatabaseSch
   temp <- DatabaseConnector::querySql(connection, sql)
 
   ifelse(is.na(temp[1,1]),
-         temp <- paste0("D:/git/ABMI/AEGIS_WEB/LOCATION_IN_PERSON.sql"),  #in person
-         temp <- paste0("D:/git/ABMI/AEGIS_WEB/LOCATION_IN_OBSERVATION.sql"))  #in observation
+         temp <- paste0(.libPaths()[1],"/AEGIS/data/LOCATION_IN_PERSON.sql"),  #in person
+         temp <- paste0(.libPaths()[1],"/AEGIS/data/LOCATION_IN_OBSERVATION.sql"))  #in observation
 
 
   sql <- SqlRender::readSql(temp)

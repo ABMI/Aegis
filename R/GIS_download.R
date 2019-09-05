@@ -1,6 +1,12 @@
 GIS.download <- function(country, MAX.level){
+
   GADM.path <- paste0(.libPaths()[1], "/AEGIS/map")
   GADM.file <- paste0("GADM_2.8_",country,"_adm_total.rda")
+
+  if (!file.exists(GADM.path))
+    dir.create(file.path(GADM.path))
+
+  setwd(GADM.path)
 
   if(!file.exists(file.path(GADM.path, GADM.file))){
     GADM_list <- list()
