@@ -90,9 +90,9 @@ leafletClustering <- function(parameter, GIS.age, GIS.level, colorsClustering){
   }
 
   max_value <- max(na.omit(unique(tempGADM$k.cluster)))
-  # pal <- colorNumeric(topo.colors(max_value),domain =  NULL, na.color = "#FFFFFF", alpha = FALSE,
-  #                     reverse = FALSE)
-  #
+   pal <- colorNumeric(topo.colors(max_value),domain =  NULL, na.color = "#FFFFFF", alpha = FALSE,
+                       reverse = FALSE)
+  
 
   #create leaflet map
   polydf <- rgeos::gSimplify(GADM[[3]], tol=0.01, topologyPreserve=TRUE)
