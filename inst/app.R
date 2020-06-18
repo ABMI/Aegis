@@ -68,14 +68,14 @@ shinyApp(
                 fluidRow(
                   titlePanel("Database Connection"),
                   sidebarPanel(
-                    textInput("ip","IP","",placeholder = 'xxx.xxx.xxx.xxx')
+                    textInput("ip","IP","128.1.99.53",placeholder = 'xxx.xxx.xxx.xxx')
                     ,uiOutput("sqltype")
-                    ,textInput("CDMschema","CDM Database schema","",placeholder = 'yourCdmDb.schema')
-                    ,textInput("Resultschema","CDM Result schema","",placeholder = 'yourCdmResultDb.schema')
+                    ,textInput("CDMschema","CDM Database schema","AUSOMv5_3.dbo",placeholder = 'yourCdmDb.schema')
+                    ,textInput("Resultschema","CDM Result schema","AUSOMv5_3.result_v274",placeholder = 'yourCdmResultDb.schema')
                     ,textInput("usr","USER","")
                     ,passwordInput("pw","PASSWORD","")
-                    ,textInput('WebapiDBserver','WebAPI DB Server IP','',placeholder = 'xxx.xxx.xxx.xxx')
-                    ,textInput('WebapiDBschema','WebAPI DB Schema','',placeholder = 'yourWebAPIDb.schema')
+                    ,textInput('WebapiDBserver','WebAPI DB Server IP','128.1.99.58',placeholder = 'xxx.xxx.xxx.xxx')
+                    ,textInput('WebapiDBschema','WebAPI DB Schema','WEBAPI_DB.webapi_v27',placeholder = 'yourWebAPIDb.schema')
                     ,uiOutput("country_list")
                     #input text to db information
                     ,actionButton("db_load","Load DB")
