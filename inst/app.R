@@ -48,7 +48,8 @@ if(isTRUE(which(installed.packages()[,1] %in% "INLA")>1)){
 
 gpclibPermit()
 Sys.setlocale(category = "LC_ALL", locale = "us")
-maxLevel <- 2
+maxLevel <<- 2
+country <<- "South Korea"
 
 shinyApp(
   # Define UI for dataset viewer application
