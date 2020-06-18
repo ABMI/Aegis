@@ -313,7 +313,7 @@ shinyApp(
     ####################
 
     cohort_listup <- eventReactive(input$db_load, {
-      cohort_list <<- Call.Cohortlist(input$WebapiDBserver,input$WebapiDBschema,input$Resultschema)
+      cohort_list <<- Call.Cohortlist(input$WebapiDBserver,input$Resultschema,input$Resultschema)
     })
 
     output$sqltype <- renderUI({
