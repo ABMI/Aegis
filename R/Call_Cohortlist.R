@@ -12,7 +12,7 @@ Call.Cohortlist<-function(WebapiDBserver,WebapiDBschema,Resultschema, targettab=
   cohort<-DatabaseConnector::querySql(connection, sql)
 
   ##Check Cohort Definition
-  sql <- 'SELECT name,id FROM @WebapiDBserver@WebapiDBschema.cohort_definition'
+  sql <- 'SELECT name,id FROM @WebapiDBserver@Resultschema.cohort_definition'
   sql <- SqlRender::renderSql(sql,
                               WebapiDBserver=if(WebapiDBserver==''){WebapiDBserver=''}else(WebapiDBserver= paste0('[',WebapiDBserver,']','.')),
                               WebapiDBschema=WebapiDBschema)$sql
